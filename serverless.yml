@@ -1,0 +1,49 @@
+org: test
+app: lambdanodejsfileupload
+service: lambdanodejsfileupload
+frameworkVersion: '3'
+
+custom:
+  bucket: 'serverlessfileupload'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-east-1     
+  iam:
+    role: arn:aws:iam::xxxxxxxxxxxx:role/lambdaexecutionrole
+  httpApi:
+    cors: true
+  environment: 
+    bucket_name  : ${self:custom.bucket}
+
+functions:
+
+  UploadFileIntoS3Function:
+    handler: src/upload_file_into_s3.handler
+    events:
+      - httpApi:
+          path: /uploadfile
+          method: post
+
+  ReadFileFromS3Function:
+    handler: src/read_file_from_s3.handler
+    events:
+      - s3:
+          bucket: 
+          event: s3:ObjectCreated:*
+
+  CountWordsFromFileFunction:
+    handler: src/count_words_from_file.handler
+    events:
+      - httpApi:
+          path: /countwordsfromfile
+          method: post
+
+
+resources:
+  Resources:
+    MyS3Bucket:
+      Type: "AWS::S3::Bucket"
+      Properties:
+        BucketName: ${self:custom.bucket}
